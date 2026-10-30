@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fff8f5">
+  <title>Eternal Return Item Grid</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div>
+      <p class="eyebrow">ETERNAL RETURN</p>
+      <h1>Item Grid Maker</h1>
+      <p class="subtitle">お気に入りのアイテムを並べて、画像にしよう。</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 絞り込み -->
+    <section class="panel">
+      <div class="section-heading">
+        <h2>アイテム検索</h2>
+        <span id="dataStatus">データを読み込み中...</span>
+      </div>
+
+      <div class="filter-grid">
+        <label>
+          <span>項目A</span>
+          <select id="filterA">
+            <option value="">すべて</option>
+          </select>
+        </label>
+
+        <label>
+          <span>項目B</span>
+          <select id="filterB">
+            <option value="">すべて</option>
+          </select>
+        </label>
+
+        <label>
+          <span>レアリティ</span>
+          <select id="filterRarity">
+            <option value="">すべて</option>
+          </select>
+        </label>
+
+        <label class="search-field">
+          <span>名前検索（日本語・韓国語）</span>
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="アイテム名を入力..."
+          >
+        </label>
+      </div>
+
+      <div class="filter-footer">
+        <span id="resultCount">0件</span>
+        <button type="button" id="resetFilters" class="sub-button">
+          絞り込みをリセット
+        </button>
+      </div>
+    </section>
+
+    <!-- アイテム一覧 -->
+    <section class="panel">
+      <div class="section-heading">
+        <h2>アイテム一覧</h2>
+        <p class="small-note">クリックすると選択できます</p>
+      </div>
+
+      <div id="itemList" class="item-list">
+        <p class="loading-message">アイテムを読み込んでいます...</p>
+      </div>
+    </section>
+
+    <!-- 選択中アイテム -->
+    <section class="panel">
+      <div class="section-heading">
+        <h2>選択中のアイテム</h2>
+        <span id="selectedCount">0個選択中</span>
+      </div>
+
+      <p class="small-note">
+        ▲▼ボタンで順番を変更できます。選択した順番が画像にも反映されます。
+      </p>
+
+      <div id="selectedList" class="selected-list">
+        <p class="empty-message">アイテムを選択してください。</p>
+      </div>
+    </section>
+
+    <!-- 画像設定 -->
+    <section class="panel">
+      <h2>画像設定</h2>
+
+      <div class="settings-grid">
+        <label>
+          <span>列数</span>
+          <input type="number" id="columnCount" min="1" max="20" value="6">
+        </label>
+
+        <label>
+          <span>アイコンサイズ（%）</span>
+          <input type="number" id="scaleInput" min="10" max="300" value="100">
+        </label>
+      </div>
+
+      <p class="small-note">
+        アイテム画像は縦横比を維持し、各マスの下側に揃えて配置します。
+      </p>
+    </section>
+
+    <!-- プレビュー -->
+    <section class="panel">
+      <div class="section-heading">
+        <h2>プレビュー</h2>
+        <span class="small-note">背景透過PNG</span>
+      </div>
+
+      <div class="preview-scroll">
+        <div id="gridPreview" class="grid-preview">
+          <p class="empty-message">アイテムを選択するとプレビューが表示されます。</p>
+        </div>
+      </div>
+
+      <button type="button" id="exportButton" class="primary-button">
+        PNG画像を保存
+      </button>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Eternal Return Item Grid Maker</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
