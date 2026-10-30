@@ -293,10 +293,11 @@ input:focus {
   margin-top: 12px;
 }
 
+/* プレビュー：外側・画像同士の余白を0に */
 .preview-scroll {
   width: 100%;
   overflow-x: auto;
-  padding: 12px;
+  padding: 0;
   background-color: #f7f3f1;
   background-image:
     linear-gradient(45deg, #e9e3e0 25%, transparent 25%),
@@ -316,10 +317,10 @@ input:focus {
 .grid-preview {
   display: grid;
   grid-template-columns: repeat(6, 90px);
-  gap: 8px;
+  gap: 0;
   width: max-content;
   min-width: 100%;
-  min-height: 100px;
+  min-height: 90px;
 }
 
 .preview-item {
