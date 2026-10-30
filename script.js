@@ -160,7 +160,10 @@ function fillSelect(select, values) {
 function setupFilters() {
   fillSelect(filterA, unique(allItems.map(item => item.categoryA)));
   fillSelect(filterB, unique(allItems.map(item => item.categoryB)));
-  fillSelect(filterRarity, unique(allItems.map(item => item.rarity)));
+  fillSelect(
+    filterRarity,
+    ORDER_RARITY.filter(rarity => allItems.some(item => item.rarity === rarity))
+  );
 }
 
 function unique(values) {
@@ -293,7 +296,7 @@ function renderItemList() {
 
     const img = document.createElement("img");
     img.src = getImagePath(item.image);
-    img.alt = item.japanese || item.korean;
+    img.alt = item.japanese;
     img.loading = "lazy";
     img.onerror = () => {
       img.style.display = "none";
@@ -301,13 +304,9 @@ function renderItemList() {
 
     const name = document.createElement("span");
     name.className = "item-name";
-    name.textContent = item.japanese || item.korean;
+    name.textContent = item.japanese;
 
-    const subname = document.createElement("span");
-    subname.className = "item-subname";
-    subname.textContent = item.korean;
-
-    card.append(img, name, subname);
+    card.append(img, name);
 
     card.addEventListener("click", () => {
       toggleItem(item);
@@ -353,7 +352,7 @@ function renderSelectedList() {
 
     const name = document.createElement("span");
     name.className = "selected-name";
-    name.textContent = item.japanese || item.korean;
+    name.textContent = item.japanese;
 
     const controls = document.createElement("div");
     controls.className = "selected-controls";
@@ -418,7 +417,7 @@ function renderPreview() {
 
     const img = document.createElement("img");
     img.src = getImagePath(item.image);
-    img.alt = item.japanese || item.korean;
+    img.alt = item.japanese;
     img.style.width = `${scale}%`;
     img.style.height = `${scale}%`;
     img.style.maxWidth = "none";
