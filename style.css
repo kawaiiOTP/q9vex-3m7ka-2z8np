@@ -293,7 +293,7 @@ input:focus {
   margin-top: 12px;
 }
 
-/* プレビュー：外側・画像同士の余白を0に */
+/* プレビュー：外側・横・縦の余白を0に */
 .preview-scroll {
   width: 100%;
   overflow-x: auto;
@@ -317,10 +317,11 @@ input:focus {
 .grid-preview {
   display: grid;
   grid-template-columns: repeat(6, 90px);
+  grid-auto-rows: max-content;
   gap: 0;
+  align-items: end;
   width: max-content;
   min-width: 100%;
-  min-height: 90px;
 }
 
 .preview-item {
@@ -328,14 +329,20 @@ input:focus {
   align-items: flex-end;
   justify-content: center;
   width: 90px;
-  height: 90px;
+  height: auto;
+  margin: 0;
+  padding: 0;
 }
 
 .preview-item img {
   display: block;
+  width: 100%;
+  height: auto;
   max-width: 100%;
-  max-height: 100%;
+  max-height: 90px;
   object-fit: contain;
+  margin: 0;
+  padding: 0;
 }
 
 .primary-button {
