@@ -466,7 +466,7 @@ async function exportPNG() {
     const scale = Math.max(10, Math.min(300, Number(scaleInput.value) || 100));
 
     const cellSize = 90;
-    const gap = 8;
+    const gap = 0;
     const rows = Math.ceil(selectedItems.length / columns);
 
     const canvas = document.createElement("canvas");
