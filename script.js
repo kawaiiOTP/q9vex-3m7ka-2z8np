@@ -467,35 +467,75 @@ async function exportPNG() {
 
     const cellSize = 90;
     const gap = 0;
-    const rows = Math.ceil(selectedItems.length / columns);
+    const imageWidth = cellSize * scale / 100;
+
+    // 画像をすべて読み込み、表示サイズを計算
+    const loadedItems = await Promise.all(
+      selectedItems.map(async item => {
+        const img = await loadImage(getImagePath(item.image));
+        const ratio = img.height / img.width;
+
+        return {
+          item,
+          img,
+          width: imageWidth,
+          height: imageWidth * ratio
+        };
+      })
+    );
+
+    const rows = Math.ceil(loadedItems.length / columns);
+    const rowHeights = [];
+
+    // 各行で最も高い画像に合わせて行の高さを決定
+    for (let row = 0; row < rows; row++) {
+      const rowItems = loadedItems.slice(
+        row * columns,
+        (row + 1) * columns
+      );
+
+      rowHeights.push(
+        Math.max(...rowItems.map(entry => entry.height))
+      );
+    }
+
+    const rowOffsets = [];
+    let totalHeight = 0;
+
+    rowHeights.forEach((height, index) => {
+      rowOffsets.push(totalHeight);
+      totalHeight += height;
+
+      if (index < rowHeights.length - 1) {
+        totalHeight += gap;
+      }
+    });
 
     const canvas = document.createElement("canvas");
     canvas.width = columns * cellSize + (columns - 1) * gap;
-    canvas.height = rows * cellSize + (rows - 1) * gap;
+    canvas.height = Math.ceil(totalHeight);
 
     const ctx = canvas.getContext("2d");
 
-    for (let i = 0; i < selectedItems.length; i++) {
-      const item = selectedItems[i];
-      const img = await loadImage(getImagePath(item.image));
-
+    loadedItems.forEach((entry, i) => {
       const col = i % columns;
       const row = Math.floor(i / columns);
 
       const cellX = col * (cellSize + gap);
-      const cellY = row * (cellSize + gap);
+      const rowY = rowOffsets[row];
 
-      const maxSize = cellSize * scale / 100;
-      const ratio = Math.min(maxSize / img.width, maxSize / img.height);
+      // 各セルの下端に画像を揃える
+      const x = cellX + (cellSize - entry.width) / 2;
+      const y = rowY + rowHeights[row] - entry.height;
 
-      const width = img.width * ratio;
-      const height = img.height * ratio;
-
-      const x = cellX + (cellSize - width) / 2;
-      const y = cellY + cellSize - height;
-
-      ctx.drawImage(img, x, y, width, height);
-    }
+      ctx.drawImage(
+        entry.img,
+        x,
+        y,
+        entry.width,
+        entry.height
+      );
+    });
 
     canvas.toBlob(blob => {
       if (!blob) {
