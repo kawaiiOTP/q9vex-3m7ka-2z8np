@@ -39,6 +39,22 @@ const exportButton = document.getElementById("exportButton");
 let allItems = [];
 let selectedItems = [];
 
+// 画像倍率を取得
+function getScale() {
+  return Math.max(
+    10,
+    Math.min(300, Number(scaleInput.value) || 100)
+  ) / 100;
+}
+
+// 列数を取得
+function getColumns() {
+  return Math.max(
+    1,
+    Math.min(20, Number(columnCount.value) || 6)
+  );
+}
+
 // CSVを読み込む
 async function loadCSV() {
   try {
@@ -58,6 +74,7 @@ async function loadCSV() {
     const headers = rows[0].map(value => value.trim());
 
     const index = {};
+
     for (const [key, name] of Object.entries(COL)) {
       index[key] = headers.indexOf(name);
 
@@ -87,9 +104,12 @@ async function loadCSV() {
     renderAll();
 
     dataStatus.textContent = `${allItems.length}件のデータを読み込みました`;
+
   } catch (error) {
     console.error(error);
+
     dataStatus.textContent = "読み込みエラー";
+
     itemList.innerHTML = `
       <p class="empty-message">
         データを読み込めませんでした。<br>
@@ -121,8 +141,10 @@ function parseCSV(text) {
       value = "";
     } else if ((char === "\n" || char === "\r") && !quoted) {
       if (char === "\r" && next === "\n") i++;
+
       row.push(value);
       rows.push(row);
+
       row = [];
       value = "";
     } else {
@@ -158,11 +180,21 @@ function fillSelect(select, values) {
 
 // 絞り込み選択肢の初期設定
 function setupFilters() {
-  fillSelect(filterA, unique(allItems.map(item => item.categoryA)));
-  fillSelect(filterB, unique(allItems.map(item => item.categoryB)));
+  fillSelect(
+    filterA,
+    unique(allItems.map(item => item.categoryA))
+  );
+
+  fillSelect(
+    filterB,
+    unique(allItems.map(item => item.categoryB))
+  );
+
   fillSelect(
     filterRarity,
-    ORDER_RARITY.filter(rarity => allItems.some(item => item.rarity === rarity))
+    ORDER_RARITY.filter(rarity =>
+      allItems.some(item => item.rarity === rarity)
+    )
   );
 }
 
@@ -176,7 +208,6 @@ function getRank(value, order) {
 
   const index = order.findIndex(name => normalized === name);
 
-  // 未登録の値は後ろに配置
   return index === -1 ? 999 : index;
 }
 
@@ -210,22 +241,27 @@ function sortItems(items) {
     const aRank = getRank(a.categoryA, ORDER_A);
     const bRank = getRank(b.categoryA, ORDER_A);
 
-    if (aRank !== bRank) return aRank - bRank;
+    if (aRank !== bRank) {
+      return aRank - bRank;
+    }
 
-    // 項目B：胴 → 頭 → 腕・装具 → 足
-    // 武器は項目Bの順番を問わない
+    // 項目B：防具のみ 胴 → 頭 → 腕・装具 → 足
     if (normalizeCategory(a.categoryA) === "防具") {
       const aBRank = getCategoryBRank(a.categoryB);
       const bBRank = getCategoryBRank(b.categoryB);
 
-      if (aBRank !== bBRank) return aBRank - bBRank;
+      if (aBRank !== bBRank) {
+        return aBRank - bBRank;
+      }
     }
 
     // レアリティ：紫 → 金 → 赤
     const aRarity = getRank(a.rarity, ORDER_RARITY);
     const bRarity = getRank(b.rarity, ORDER_RARITY);
 
-    if (aRarity !== bRarity) return aRarity - bRarity;
+    if (aRarity !== bRarity) {
+      return aRarity - bRarity;
+    }
 
     // 韓国語：가나다順
     return a.korean.localeCompare(b.korean, "ko");
@@ -246,6 +282,7 @@ function getFilteredItems() {
 
     if (search) {
       const names = `${item.japanese} ${item.korean}`.toLowerCase();
+
       if (!names.includes(search)) return false;
     }
 
@@ -281,14 +318,17 @@ function renderItemList() {
   resultCount.textContent = `${items.length}件`;
 
   if (items.length === 0) {
-    itemList.innerHTML = '<p class="empty-message">該当するアイテムがありません。</p>';
+    itemList.innerHTML =
+      '<p class="empty-message">該当するアイテムがありません。</p>';
     return;
   }
 
   itemList.innerHTML = "";
 
   items.forEach(item => {
-    const isSelected = selectedItems.some(selected => selected.id === item.id);
+    const isSelected = selectedItems.some(
+      selected => selected.id === item.id
+    );
 
     const card = document.createElement("button");
     card.type = "button";
@@ -298,6 +338,7 @@ function renderItemList() {
     img.src = getImagePath(item.image);
     img.alt = item.japanese;
     img.loading = "lazy";
+
     img.onerror = () => {
       img.style.display = "none";
     };
@@ -318,7 +359,9 @@ function renderItemList() {
 
 // アイテムの追加・解除
 function toggleItem(item) {
-  const index = selectedItems.findIndex(selected => selected.id === item.id);
+  const index = selectedItems.findIndex(
+    selected => selected.id === item.id
+  );
 
   if (index !== -1) {
     selectedItems.splice(index, 1);
@@ -335,7 +378,8 @@ function renderSelectedList() {
   selectedList.innerHTML = "";
 
   if (selectedItems.length === 0) {
-    selectedList.innerHTML = '<p class="empty-message">アイテムを選択してください。</p>';
+    selectedList.innerHTML =
+      '<p class="empty-message">アイテムを選択してください。</p>';
     return;
   }
 
@@ -346,6 +390,7 @@ function renderSelectedList() {
     const img = document.createElement("img");
     img.src = getImagePath(item.image);
     img.alt = "";
+
     img.onerror = () => {
       img.style.visibility = "hidden";
     };
@@ -375,6 +420,7 @@ function renderSelectedList() {
     remove.type = "button";
     remove.textContent = "×";
     remove.title = "選択解除";
+
     remove.addEventListener("click", () => {
       selectedItems.splice(index, 1);
       renderAll();
@@ -382,6 +428,7 @@ function renderSelectedList() {
 
     controls.append(up, down, remove);
     row.append(img, name, controls);
+
     selectedList.appendChild(row);
   });
 }
@@ -400,16 +447,21 @@ function moveItem(index, direction) {
 
 // プレビュー
 function renderPreview() {
-  const columns = Math.max(1, Math.min(20, Number(columnCount.value) || 6));
-  const scale = Math.max(10, Math.min(300, Number(scaleInput.value) || 100));
+  const columns = getColumns();
+  const scale = getScale();
 
-  gridPreview.style.gridTemplateColumns = `repeat(${columns}, 90px)`;
   gridPreview.innerHTML = "";
 
   if (selectedItems.length === 0) {
-    gridPreview.innerHTML = '<p class="empty-message">アイテムを選択するとプレビューが表示されます。</p>';
+    gridPreview.innerHTML =
+      '<p class="empty-message">アイテムを選択するとプレビューが表示されます。</p>';
     return;
   }
+
+  gridPreview.style.gridTemplateColumns =
+    `repeat(${columns}, max-content)`;
+
+  gridPreview.style.alignItems = "end";
 
   selectedItems.forEach(item => {
     const cell = document.createElement("div");
@@ -418,11 +470,22 @@ function renderPreview() {
     const img = document.createElement("img");
     img.src = getImagePath(item.image);
     img.alt = item.japanese;
-    img.style.width = `${scale}%`;
-    img.style.height = `${scale}%`;
+
     img.style.maxWidth = "none";
     img.style.maxHeight = "none";
     img.style.objectFit = "contain";
+    img.style.display = "block";
+
+    img.onload = () => {
+      const width = img.naturalWidth * scale;
+      const height = img.naturalHeight * scale;
+
+      img.style.width = `${width}px`;
+      img.style.height = `${height}px`;
+
+      cell.style.width = `${width}px`;
+      cell.style.height = `${height}px`;
+    };
 
     img.onerror = () => {
       cell.title = `画像が見つかりません: ${item.image}`;
@@ -445,8 +508,12 @@ function renderAll() {
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`画像を読み込めません: ${src}`));
+    img.onerror = () => {
+      reject(new Error(`画像を読み込めません: ${src}`));
+    };
+
     img.src = src;
   });
 }
@@ -462,32 +529,49 @@ async function exportPNG() {
   exportButton.textContent = "画像を作成中...";
 
   try {
-    const columns = Math.max(1, Math.min(20, Number(columnCount.value) || 6));
-    const scale = Math.max(10, Math.min(300, Number(scaleInput.value) || 100));
-
-    const cellSize = 90;
+    const columns = getColumns();
+    const scale = getScale();
     const gap = 0;
-    const imageWidth = cellSize * scale / 100;
 
-    // 画像をすべて読み込み、表示サイズを計算
+    // 画像をすべて読み込む
     const loadedItems = await Promise.all(
       selectedItems.map(async item => {
         const img = await loadImage(getImagePath(item.image));
-        const ratio = img.height / img.width;
+
+        // 元画像の実寸 × 倍率
+        const width = img.naturalWidth * scale;
+        const height = img.naturalHeight * scale;
 
         return {
           item,
           img,
-          width: imageWidth,
-          height: imageWidth * ratio
+          width,
+          height
         };
       })
     );
 
+    // 行数
     const rows = Math.ceil(loadedItems.length / columns);
+
+    // 列ごとの最大幅
+    const columnWidths = [];
+
+    for (let col = 0; col < columns; col++) {
+      const colItems = loadedItems.filter(
+        (item, index) => index % columns === col
+      );
+
+      columnWidths.push(
+        colItems.length
+          ? Math.max(...colItems.map(item => item.width))
+          : 0
+      );
+    }
+
+    // 行ごとの最大高さ
     const rowHeights = [];
 
-    // 各行で最も高い画像に合わせて行の高さを決定
     for (let row = 0; row < rows; row++) {
       const rowItems = loadedItems.slice(
         row * columns,
@@ -495,10 +579,24 @@ async function exportPNG() {
       );
 
       rowHeights.push(
-        Math.max(...rowItems.map(entry => entry.height))
+        Math.max(...rowItems.map(item => item.height))
       );
     }
 
+    // 列の開始位置
+    const columnOffsets = [];
+    let totalWidth = 0;
+
+    columnWidths.forEach((width, index) => {
+      columnOffsets.push(totalWidth);
+      totalWidth += width;
+
+      if (index < columns - 1) {
+        totalWidth += gap;
+      }
+    });
+
+    // 行の開始位置
     const rowOffsets = [];
     let totalHeight = 0;
 
@@ -506,27 +604,41 @@ async function exportPNG() {
       rowOffsets.push(totalHeight);
       totalHeight += height;
 
-      if (index < rowHeights.length - 1) {
+      if (index < rows - 1) {
         totalHeight += gap;
       }
     });
 
+    // Canvas作成
     const canvas = document.createElement("canvas");
-    canvas.width = columns * cellSize + (columns - 1) * gap;
-    canvas.height = Math.ceil(totalHeight);
+
+    canvas.width = Math.max(1, Math.ceil(totalWidth));
+    canvas.height = Math.max(1, Math.ceil(totalHeight));
 
     const ctx = canvas.getContext("2d");
 
-    loadedItems.forEach((entry, i) => {
-      const col = i % columns;
-      const row = Math.floor(i / columns);
+    if (!ctx) {
+      throw new Error("Canvasを作成できませんでした");
+    }
 
-      const cellX = col * (cellSize + gap);
-      const rowY = rowOffsets[row];
+    // 透過背景
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 各セルの下端に画像を揃える
-      const x = cellX + (cellSize - entry.width) / 2;
-      const y = rowY + rowHeights[row] - entry.height;
+    // アイテム描画
+    loadedItems.forEach((entry, index) => {
+      const col = index % columns;
+      const row = Math.floor(index / columns);
+
+      // 列の中央に配置
+      const x =
+        columnOffsets[col] +
+        (columnWidths[col] - entry.width) / 2;
+
+      // 行の下端に揃える
+      const y =
+        rowOffsets[row] +
+        rowHeights[row] -
+        entry.height;
 
       ctx.drawImage(
         entry.img,
@@ -537,46 +649,63 @@ async function exportPNG() {
       );
     });
 
-    canvas.toBlob(blob => {
-      if (!blob) {
-        alert("PNG画像の作成に失敗しました。");
-        return;
-      }
-
-      const url = URL.createObjectURL(blob);
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      if (isMobile) {
-        const newTab = window.open(url, "_blank");
-
-        if (!newTab) {
-          location.href = url;
+    // PNG変換
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(result => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(new Error("PNG画像の作成に失敗しました"));
         }
-      } else {
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "eternal-return-item-grid.png";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+      }, "image/png");
+    });
 
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
+    const url = URL.createObjectURL(blob);
+
+    const isMobile =
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      const newTab = window.open(url, "_blank");
+
+      if (!newTab) {
+        location.href = url;
       }
 
-      exportButton.textContent = isMobile
-        ? "画像を開きました"
-        : "PNG画像を保存しました";
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
 
-      setTimeout(() => {
-        exportButton.textContent = "PNG画像を保存";
-      }, 2500);
-    }, "image/png");
+    } else {
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "eternal-return-item-grid.png";
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+
+    exportButton.textContent = isMobile
+      ? "画像を開きました"
+      : "PNG画像を保存しました";
+
+    setTimeout(() => {
+      exportButton.textContent = "PNG画像を保存";
+    }, 2500);
 
   } catch (error) {
     console.error(error);
+
     alert(`画像の作成に失敗しました。\n${error.message}`);
+
   } finally {
     exportButton.disabled = false;
+
+    if (exportButton.textContent === "画像を作成中...") {
+      exportButton.textContent = "PNG画像を保存";
+    }
   }
 }
 
@@ -592,11 +721,13 @@ resetFilters.addEventListener("click", () => {
   filterB.value = "";
   filterRarity.value = "";
   searchInput.value = "";
+
   renderItemList();
 });
 
 columnCount.addEventListener("input", renderPreview);
 scaleInput.addEventListener("input", renderPreview);
+
 exportButton.addEventListener("click", exportPNG);
 
 // 起動
